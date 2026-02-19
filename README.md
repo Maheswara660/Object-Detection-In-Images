@@ -44,7 +44,7 @@ Object Detection In Images/
 
 - [Python](https://www.python.org/downloads/) - for compiling the code
 - [Git](https://git-scm.com/downloads) - for downloading this project
-- [Git LFS](https://git-lfs.com) - Enable Git LFS for downloading YOLOv8 models (optional)
+- [Git LFS](https://git-lfs.com) - Enable Git LFS for downloading YOLOv8 models
 
 ### Steps
 
@@ -52,6 +52,8 @@ Object Detection In Images/
     ```bash
     git clone https://github.com/Maheswara660/Object-Detection-In-Images.git
     cd Object-Detection-In-Images
+    git lfs install
+    git lfs pull
     ```
 
 2.  **Set up the Virtual Environment:**
