@@ -114,6 +114,38 @@ The application will start at `http://127.0.0.1:5000/`.
 3.  Adjust the confidence threshold if needed.
 4.  View the detected objects and their bounding boxes on the processed image.
 
+## 🌐 Deploy with GitHub Pages and Render
+
+The frontend is a static site and is deployed by GitHub Pages. The YOLO/Flask
+API must be deployed separately because GitHub Pages cannot run Python servers.
+
+### 1. Deploy the API to Render
+
+1. Open https://dashboard.render.com/select-repo?type=web
+2. Connect the `Maheswara660/Object-Detection-In-Images` repository.
+3. Render will detect `render.yaml` and create `object-detection-api`.
+4. Set `ALLOWED_ORIGIN` to the exact GitHub Pages origin, for example:
+   `https://maheswara660.github.io`
+5. Deploy and copy the public Render URL.
+
+### 2. Connect the Pages frontend
+
+Edit `static/config.js` and set:
+
+```javascript
+window.OBJECT_DETECTION_API_URL = 'https://your-api-name.onrender.com';
+```
+
+Commit and push the change to `main`.
+
+### 3. Enable GitHub Pages
+
+In the GitHub repository settings, open **Pages**, set **Source** to
+**GitHub Actions**, and run the **Deploy GitHub Pages** workflow. The site URL
+will be `https://maheswara660.github.io/Object-Detection-In-Images/`.
+
+The `/health` endpoint can be used to verify that the API is running.
+
 ---
 
 ## 🤝 Contributing

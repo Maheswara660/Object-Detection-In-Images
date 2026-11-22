@@ -4,7 +4,8 @@ from flask_cors import CORS
 from detector import ObjectDetector
 
 app = Flask(__name__, static_folder='static', static_url_path='')
-CORS(app)
+allowed_origin = os.getenv('ALLOWED_ORIGIN', '*')
+CORS(app, resources={r"/*": {"origins": allowed_origin}})
 
 # Initialize detector
 detector = ObjectDetector()
@@ -12,6 +13,10 @@ detector = ObjectDetector()
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
+
+@app.route('/health')
+def health():
+    return jsonify({'status': 'ok'})
 
 @app.route('/detect', methods=['POST'])
 def detect():

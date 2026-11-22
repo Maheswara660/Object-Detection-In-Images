@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const apiBaseUrl = (window.OBJECT_DETECTION_API_URL || '').replace(/\/$/, '');
+
     // Elements
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
@@ -105,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const startTime = performance.now();
 
         try {
-            const response = await fetch('/detect', {
+            const response = await fetch(`${apiBaseUrl}/detect`, {
                 method: 'POST',
                 body: formData
             });
