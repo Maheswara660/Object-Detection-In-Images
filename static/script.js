@@ -1,6 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const apiBaseUrl = (window.OBJECT_DETECTION_API_URL || '').replace(/\/$/, '');
-
     // Elements
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
@@ -18,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // State
     let currentDetections = [];
-    let imageScale = 1;
+    let detectorPromise = null;
 
     // Colors for different classes (hash or fixed palette)
     const getLabelColor = (label) => {
@@ -99,13 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function detectObjects(file) {
-        if (!apiBaseUrl) {
-            loader.classList.add('hidden');
-            workspaceSection.classList.add('hidden');
-            uploadSection.classList.remove('hidden');
-            alert('The detection API is not configured yet. Deploy the Flask app to Render, then set window.OBJECT_DETECTION_API_URL in static/config.js.');
-            return;
-        }
         if (file.size > 10 * 1024 * 1024) {
             loader.classList.add('hidden');
             workspaceSection.classList.add('hidden');
@@ -114,35 +105,39 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('image', file);
-        // Initial detection with low threshold to get all potential candidates
-        formData.append('confidence', '0.1');
-
         const startTime = performance.now();
 
         try {
-            const response = await fetch(`${apiBaseUrl}/detect`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                let message = 'Detection failed';
-                try {
-                    const errorData = await response.json();
-                    if (errorData.error) message = errorData.error;
-                } catch (_) {
-                    // Use the generic message when the server does not return JSON.
-                }
-                throw new Error(message);
+            if (!detectorPromise) {
+                loader.querySelector('p').textContent = 'Loading public detection model...';
+                const transformers = await import(
+                    'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1'
+                );
+                detectorPromise = transformers.pipeline(
+                    'object-detection',
+                    'Xenova/detr-resnet-50'
+                );
             }
 
-            const data = await response.json();
+            loader.querySelector('p').textContent = 'Analysing Image...';
+            const detector = await detectorPromise;
+            const output = await detector(sourceImage.src, {
+                threshold: 0.1,
+                percentage: false
+            });
             const endTime = performance.now();
 
             processTime.textContent = `${(endTime - startTime).toFixed(0)}ms`;
-            currentDetections = data.detections;
+            currentDetections = output.map((item) => ({
+                bbox: [
+                    item.box.xmin,
+                    item.box.ymin,
+                    item.box.xmax,
+                    item.box.ymax
+                ],
+                confidence: item.score,
+                label: item.label
+            }));
 
             // Draw with current slider value
             drawDetections(currentDetections, confidenceRange.value / 100);
