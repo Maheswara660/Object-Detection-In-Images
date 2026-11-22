@@ -106,6 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('The detection API is not configured yet. Deploy the Flask app to Render, then set window.OBJECT_DETECTION_API_URL in static/config.js.');
             return;
         }
+        if (file.size > 10 * 1024 * 1024) {
+            loader.classList.add('hidden');
+            workspaceSection.classList.add('hidden');
+            uploadSection.classList.remove('hidden');
+            alert('Please select an image smaller than 10 MB');
+            return;
+        }
 
         const formData = new FormData();
         formData.append('image', file);
@@ -120,7 +127,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData
             });
 
-            if (!response.ok) throw new Error('Detection failed');
+            if (!response.ok) {
+                let message = 'Detection failed';
+                try {
+                    const errorData = await response.json();
+                    if (errorData.error) message = errorData.error;
+                } catch (_) {
+                    // Use the generic message when the server does not return JSON.
+                }
+                throw new Error(message);
+            }
 
             const data = await response.json();
             const endTime = performance.now();
@@ -133,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error(error);
-            alert('Error processing image');
+            alert(error.message || 'Error processing image');
         } finally {
             loader.classList.add('hidden');
         }

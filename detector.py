@@ -4,12 +4,18 @@ import numpy as np
 from PIL import Image
 
 class ObjectDetector:
-    def __init__(self, model_path='yolov8m.pt'):
+    def __init__(self, model_path='yolov8n.pt'):
         """
         Initialize the YOLOv8 model.
         Uses the nano model by default for speed.
         """
-        self.model = YOLO(model_path)
+        self.model_path = model_path
+        self.model = None
+
+    def _get_model(self):
+        if self.model is None:
+            self.model = YOLO(self.model_path)
+        return self.model
 
     def process_image(self, image_bytes, confidence_threshold=0.25):
         """
@@ -30,7 +36,7 @@ class ObjectDetector:
             raise ValueError("Could not decode image")
 
         # Run inference
-        results = self.model(img, conf=confidence_threshold)
+        results = self._get_model()(img, conf=confidence_threshold)
         
         detections = []
         result = results[0]  # We only process one image at a time
