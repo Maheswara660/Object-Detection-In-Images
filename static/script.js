@@ -99,6 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function detectObjects(file) {
+        if (!apiBaseUrl) {
+            loader.classList.add('hidden');
+            workspaceSection.classList.add('hidden');
+            uploadSection.classList.remove('hidden');
+            alert('The detection API is not configured yet. Deploy the Flask app to Render, then set window.OBJECT_DETECTION_API_URL in static/config.js.');
+            return;
+        }
+
         const formData = new FormData();
         formData.append('image', file);
         // Initial detection with low threshold to get all potential candidates
